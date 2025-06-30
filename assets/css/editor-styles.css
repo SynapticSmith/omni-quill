@@ -1,0 +1,19 @@
+#mp_ai_content_box {
+    /* Basic styling for your meta box */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+#mp_ai_prompt {
+    width: 100%; /* Make the textarea fill the width */
+    max-width: 100%; /* Prevent overflow */
+    box-sizing: border-box; /* Include padding/border in width */
+}
+
+#mp_ai_loading_indicator {
+    margin-left: 10px;
+    color: #555;
+    font-style: italic;
+}
