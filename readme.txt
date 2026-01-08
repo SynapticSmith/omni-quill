@@ -1,88 +1,133 @@
 === MP AI Content Generator ===
 Contributors: mayankbpandya
-Tags: AI based blog post generation, AI content generation, ChatGPT, Gemini, Create Blog Post Using AI
+Tags: AI, Gemini, ChatGPT, Web Scraping, Image Generation, Multi-modal
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-
-Seamlessly generate AI-powered content in your WordPress editor using Google Gemini or OpenAI's ChatGPT with a simple prompt.
-
-== Description ==
-
-The "MP AI Content Generator" plugin seamlessly integrates powerful AI capabilities from Google Gemini and OpenAI (ChatGPT) directly into your WordPress post and page editor. Say goodbye to content blocks and tedious manual writing. With this plugin, you can generate creative text, expand on ideas, or create drafts simply by providing a prompt, all without leaving your WordPress dashboard.
-
-Boost your content creation workflow, save time, and overcome writer's block by leveraging the power of AI right where you write.
-
-**Features:**
-
-– **Integrated Editor Experience**: Generate AI content directly within the Gutenberg editor (and Classic Editor for basic text insertion).
-– **Flexible AI Model Selection**: Choose between Google Gemini AI and OpenAI's ChatGPT (e.g., GPT-3.5 Turbo) based on your preference and API key.
-– **Simple Prompt Input**: A dedicated meta box in the post/page editor allows you to quickly input your content generation prompts.
-– **Direct Content Insertion**: AI-generated text is automatically inserted as new paragraphs or headings directly into your post content.
-– **Basic Markdown Recognition**: Converts `##` to `<h2>` headings and `**text**` to `<strong>`text`</strong>` for improved formatting.
-– **Secure API Key Management**: Store your AI API keys securely in the plugin's dedicated settings page.
-– **Dedicated Admin Menu**: Easy access to plugin settings via a top-level menu item in your WordPress admin sidebar.
-
-== Installation ==
-
-1. **Upload**: Download the plugin ZIP file. Go to your WordPress dashboard, navigate to Plugins > Add New > Upload Plugin, and select the downloaded ZIP file. Click "Install Now".
-2. **Activate**: After installation, activate the plugin through the 'Plugins' menu in WordPress.
-3. **Configure API Keys**:
-    – Navigate to the new "AI Content Gen" menu item in your WordPress admin sidebar.
-    – Enter your Google Gemini AI API Key or your OpenAI API Key in the provided field.
-    – Select your preferred AI Model (Gemini or ChatGPT).
-    – Save your settings.
-4. **Need an API Key?** Links are provided on the settings page to easily generate your API keys from Google AI Studio or OpenAI Platform.
-
-== Usage ==
-
-1. **Edit a Post or Page**: Go to Posts > Add New or Pages > Add New (or edit an existing one).
-2. **Locate the AI Content Generator Meta Box**: On the edit screen, look for the "AI Content Generator" meta box, typically found in the right sidebar.
-3. **Enter Your Prompt**: In the textarea provided, write a clear and concise prompt for the AI. For example:
-    – "Write a short introduction about the benefits of using AI in content creation."
-    – "Generate 3 bullet points on SEO best practices."
-    – "Write a conclusion for an article about remote work, emphasizing flexibility."
-4. **Generate Content**: Click the "Generate Content with AI" button. A loading indicator will appear.
-5. **Content Appears**: Once the AI finishes generating, the content will automatically be inserted into your post/page editor as new paragraphs or headings.
-6. **Review and Edit**: Review the generated content, making any necessary edits or refinements to fit your needs.
-
-== Screenshots ==
-
-1. Plugin Settings Page: Screenshot of the AI Content Gen settings page showing API key input and model selection.
-2. Meta Box in Post Editor: Screenshot of the "AI Content Generator" meta box in the Gutenberg editor with a prompt and button.
-3. Generated Content Example: Screenshot showing AI-generated content inserted into the editor.
-
-== Frequently Asked Questions ==
-
-= Where do I get an AI API key? =
-You can get your Google Gemini AI API key from Google AI Studio or your OpenAI API key from OpenAI Platform. Links are also available directly on the plugin settings page.
-
-= Is this plugin compatible with both the Classic Editor and Gutenberg? =
-Yes, it is primarily designed for Gutenberg, where it inserts content as native blocks. For the Classic Editor, it will insert plain text into the TinyMCE editor.
-
-= What if the AI generates inappropriate or incorrect content? =
-AI models can sometimes produce unexpected results. Always review and edit the generated content before publishing. This plugin is a writing assistant, not a fully autonomous content creator.
-
-= Does this plugin store my content or API key externally? =
-Your API key is stored securely in your WordPress database options table. The content generated by the AI is processed through the respective AI service (Google Gemini or OpenAI) and then returned to your WordPress site; it is not stored by the plugin itself beyond being inserted into your post draft.
-
-== Changelog ==
-
-= 1.0.1 – 2025-06-26 =
-* Fix: Resolved issue where content was not inserting into Gutenberg editor due to rawHandler parsing.
-* Enhancement: Implemented direct creation of `core/heading` and `core/paragraph` blocks for improved reliability.
-* Enhancement: Added basic Markdown conversion for `##` (H2 headings) and `**` (strong/bold text) before block insertion.
-* Improvement: Changed admin menu position from "Settings" submenu to a top-level "AI Content Gen" menu item.
-
-= 1.0.0 – 2025-06-XX =
-* Initial release.
-* Integrates Google Gemini AI and OpenAI (ChatGPT) API keys.
-* Adds AI content generation meta box to post and page editors.
-
-== Upgrade Notice ==
-
-= 1.0.1 =
-This update improves content insertion reliability in the Gutenberg editor and adds Markdown-to-block conversion. Update recommended for better compatibility and usability.
+​Multi-modal AI assistant: Generate Text, Code, Images, and Research directly in Gutenberg. Now supports Image Analysis (Vision).
+​== Description ==
+​Turn your WordPress editor into a powerful AI Content Studio. The "MP AI Content Generator" has evolved. It now seamlessly integrates multi-modal capabilities from Google Gemini and OpenAI (ChatGPT/DALL-E) directly into your WordPress post and page editor.
+​Version 1.0.1.1 - "The Neural Studio Update"
+This massive update transforms the plugin from a simple text writer into a comprehensive research and creation tool.
+​👁️ Vision (Image Analysis): Select an image from your Media Library and ask the AI to describe it, write a caption, or use it as context for a blog post.
+​🎨 Image Generation: Create stunning visuals using DALL-E 3 or Imagen 3 and automatically save them to your Media Library.
+​🌍 Web Research: Perform live Google Searches to fetch up-to-date facts and cite sources.
+​🕸️ Web Scraping: Paste a URL, and the AI will read the content to use as reference material.
+​🔄 Model Sync: One-click sync button to fetch the latest models available to your API key (fixes "Model Not Found" errors).
+​Features:
+​Text & Code Generation: Dedicated modes for writing articles or generating clean, formatted code snippets.
+​Native Blocks: Automatically converts AI output into core/heading, core/image, core/code, and core/list blocks.
+​Secure: API Keys are now managed individually by each user in their Profile, ensuring privacy and separate quotas.
+​Site Awareness: The AI detects your site's categories to provide better context and suggestions.
+​== Installation ==
+​Upload the plugin files to the /wp-content/plugins/ directory.
+​Activate the plugin through the 'Plugins' screen in WordPress.
+​Critical Step: Go to Users > Your Profile. Scroll down to "AI Content Generator Settings" and enter your API Key.
+​Open a Post, find the "AI Content Studio" sidebar.
+​First Run: Click the "Sync" icon (🔄) next to the model dropdown to load the latest available models for your key.
+​== Changelog ==
+​= 1.0.1.1 - The Neural Studio Update =
+This update aggregates multiple feature variations, listed here chronologically from foundation to final polish:
+​Phase 1: Security & Architecture
+​Security: Deprecated Global API Key storage. API Keys are now strictly user-specific, stored in user_meta.
+​Access: Added "AI Content Generator Settings" section to the WordPress "Your Profile" page.
+​Backend: Updated AJAX handlers to retrieve credentials securely via get_current_user_id().
+​Phase 2: UI Overhaul
+​UI: Completely redesigned the meta box into a "Content Studio" sidebar.
+​UI: Introduced a graphical Toolbar replacing the simple form layout.
+​UX: Added detailed loading indicators (e.g., "Thinking...", "Searching Web...").
+​Phase 3: Dynamic Model Syncing
+​Feature: Replaced hardcoded model IDs with dynamic fetching.
+​UI: Added a "Sync" (Refresh) button with spinning animation.
+​JS: Implemented localStorage caching to reduce API calls and support new models (e.g., Gemini 1.5 Pro) instantly.
+​Phase 4: Web Capabilities
+​Feature: Integrated Google Custom Search JSON API for live web results.
+​Feature: Added "Web Scraping" module to read external URLs via DOMDocument for context.
+​UI: Added "Web Search" toggle and "Reference URL" input fields.
+​Phase 5: Advanced Formatting & Code
+​Feature: Added specific "Code Mode" to the toolbar.
+​Editor: Added JS support to insert core/code blocks.
+​Enhancement: Upgraded Markdown parser to support ### (H3), bullet lists, and italics.
+​Phase 6: Image Generation
+​Feature: Added "Image Generation" mode (Text-to-Image).
+​API: Connected to Google Imagen and OpenAI DALL-E 3.
+​System: Automatic handling of base64 responses to save generated images as PNGs in the Media Library.
+​Phase 7: Vision (The Final Touch)
+​Feature: Added "Vision" capabilities (Image-to-Text).
+​UI: Added "Image Context" area allowing selection from the Media Library.
+​API: Updated generation functions to send image payloads for analysis.
+​= 1.0.1 =
+​Fix: Resolved issue where content was not inserting into Gutenberg editor due to rawHandler parsing.
+​Enhancement: Implemented direct creation of core/heading and core/paragraph blocks.
+​Enhancement: Added basic Markdown conversion.
+​= 1.0.0 =
+​Initial release.=== MP AI Content Generator ===
+Contributors: mayankbpandya
+Tags: AI, Gemini, ChatGPT, Web Scraping, Image Generation, Multi-modal
+Requires at least: 5.8
+Tested up to: 6.8
+Requires PHP: 7.4
+Stable tag: 1.0.1.1
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+​Multi-modal AI assistant: Generate Text, Code, Images, and Research directly in Gutenberg. Now supports Image Analysis (Vision).
+​== Description ==
+​Turn your WordPress editor into a powerful AI Content Studio. The "MP AI Content Generator" has evolved. It now seamlessly integrates multi-modal capabilities from Google Gemini and OpenAI (ChatGPT/DALL-E) directly into your WordPress post and page editor.
+​Version 1.0.1.1 - "The Neural Studio Update"
+This massive update transforms the plugin from a simple text writer into a comprehensive research and creation tool.
+​👁️ Vision (Image Analysis): Select an image from your Media Library and ask the AI to describe it, write a caption, or use it as context for a blog post.
+​🎨 Image Generation: Create stunning visuals using DALL-E 3 or Imagen 3 and automatically save them to your Media Library.
+​🌍 Web Research: Perform live Google Searches to fetch up-to-date facts and cite sources.
+​🕸️ Web Scraping: Paste a URL, and the AI will read the content to use as reference material.
+​🔄 Model Sync: One-click sync button to fetch the latest models available to your API key (fixes "Model Not Found" errors).
+​Features:
+​Text & Code Generation: Dedicated modes for writing articles or generating clean, formatted code snippets.
+​Native Blocks: Automatically converts AI output into core/heading, core/image, core/code, and core/list blocks.
+​Secure: API Keys are now managed individually by each user in their Profile, ensuring privacy and separate quotas.
+​Site Awareness: The AI detects your site's categories to provide better context and suggestions.
+​== Installation ==
+​Upload the plugin files to the /wp-content/plugins/ directory.
+​Activate the plugin through the 'Plugins' screen in WordPress.
+​Critical Step: Go to Users > Your Profile. Scroll down to "AI Content Generator Settings" and enter your API Key.
+​Open a Post, find the "AI Content Studio" sidebar.
+​First Run: Click the "Sync" icon (🔄) next to the model dropdown to load the latest available models for your key.
+​== Changelog ==
+​= 1.0.1.1 - The Neural Studio Update =
+This update aggregates multiple feature variations, listed here chronologically from foundation to final polish:
+​Phase 1: Security & Architecture
+​Security: Deprecated Global API Key storage. API Keys are now strictly user-specific, stored in user_meta.
+​Access: Added "AI Content Generator Settings" section to the WordPress "Your Profile" page.
+​Backend: Updated AJAX handlers to retrieve credentials securely via get_current_user_id().
+​Phase 2: UI Overhaul
+​UI: Completely redesigned the meta box into a "Content Studio" sidebar.
+​UI: Introduced a graphical Toolbar replacing the simple form layout.
+​UX: Added detailed loading indicators (e.g., "Thinking...", "Searching Web...").
+​Phase 3: Dynamic Model Syncing
+​Feature: Replaced hardcoded model IDs with dynamic fetching.
+​UI: Added a "Sync" (Refresh) button with spinning animation.
+​JS: Implemented localStorage caching to reduce API calls and support new models (e.g., Gemini 1.5 Pro) instantly.
+​Phase 4: Web Capabilities
+​Feature: Integrated Google Custom Search JSON API for live web results.
+​Feature: Added "Web Scraping" module to read external URLs via DOMDocument for context.
+​UI: Added "Web Search" toggle and "Reference URL" input fields.
+​Phase 5: Advanced Formatting & Code
+​Feature: Added specific "Code Mode" to the toolbar.
+​Editor: Added JS support to insert core/code blocks.
+​Enhancement: Upgraded Markdown parser to support ### (H3), bullet lists, and italics.
+​Phase 6: Image Generation
+​Feature: Added "Image Generation" mode (Text-to-Image).
+​API: Connected to Google Imagen and OpenAI DALL-E 3.
+​System: Automatic handling of base64 responses to save generated images as PNGs in the Media Library.
+​Phase 7: Vision (The Final Touch)
+​Feature: Added "Vision" capabilities (Image-to-Text).
+​UI: Added "Image Context" area allowing selection from the Media Library.
+​API: Updated generation functions to send image payloads for analysis.
+​= 1.0.1 =
+​Fix: Resolved issue where content was not inserting into Gutenberg editor due to rawHandler parsing.
+​Enhancement: Implemented direct creation of core/heading and core/paragraph blocks.
+​Enhancement: Added basic Markdown conversion.
+​= 1.0.0 =
+​Initial release.
