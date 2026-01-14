@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MP AI Content Generator
  * Description: Multi-modal AI editor assistant. Features Text, Image Generation, Web Search, Code assistance, Dynamic Model Syncing, and Image Analysis.
- * Version: 2.0.0
+ * Version: 1.0.1.1
  * OriginAuthor: Mayank Pandya 
  * Requires at least: 5.8
  * License: GPL-2.0+
@@ -21,48 +21,9 @@ if ( ! defined( 'MP_AI_PLUGIN_URL' ) ) {
     define( 'MP_AI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
-// Define Secret Key for Encryption if not in wp-config.php
-if ( ! defined( 'MP_AI_SECRET_KEY' ) ) {
-    define( 'MP_AI_SECRET_KEY', wp_salt( 'auth' ) );
-}
-
 $settings_page_path = MP_AI_PLUGIN_DIR . 'admin/settings-page.php';
 if ( file_exists( $settings_page_path ) ) {
     require_once $settings_page_path;
-}
-
-// --- Encryption Functions ---
-
-function mp_ai_encrypt_key( $data ) {
-    if ( empty( $data ) ) return $data;
-    $method = 'AES-256-CBC';
-    $iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( $method ) );
-    $encrypted = openssl_encrypt( $data, $method, MP_AI_SECRET_KEY, 0, $iv );
-    return base64_encode( $encrypted . '::' . $iv );
-}
-
-function mp_ai_decrypt_key( $data ) {
-    if ( empty( $data ) ) return $data;
-
-    // Check if it's potentially an encrypted string with our separator
-    if ( strpos( $data, '::' ) === false ) {
-        // Assume it's legacy plain text
-        return $data;
-    }
-
-    // Try to decode
-    $decoded = base64_decode( $data );
-    if ( $decoded === false ) return $data; // fallback
-
-    $parts = explode( '::', $decoded, 2 );
-    if ( count( $parts ) !== 2 ) return $data; // fallback
-
-    list( $encrypted_data, $iv ) = $parts;
-    $method = 'AES-256-CBC';
-    $decrypted = openssl_decrypt( $encrypted_data, $method, MP_AI_SECRET_KEY, 0, $iv );
-
-    // If decryption fails (e.g., key changed, or invalid data), return original
-    return $decrypted === false ? $data : $decrypted;
 }
 
 // --- Enqueue Assets ---
@@ -74,7 +35,6 @@ function mp_ai_plugin_enqueue_editor_assets( $hook_suffix ) {
     // Enqueue Media Uploader scripts
     wp_enqueue_media();
 
-    // Legacy Script
     wp_enqueue_script(
         'mp-ai-editor-script',
         MP_AI_PLUGIN_URL . 'assets/js/editor-integration.js',
@@ -98,85 +58,31 @@ function mp_ai_plugin_enqueue_editor_assets( $hook_suffix ) {
         array(),
         '1.6.0'
     );
-
-    // NEW: React Sidebar Script
-    $build_path = MP_AI_PLUGIN_DIR . 'build/index.js';
-    $build_url  = MP_AI_PLUGIN_URL . 'build/index.js';
-    $asset_file = MP_AI_PLUGIN_DIR . 'build/index.asset.php';
-
-    if ( file_exists( $build_path ) && file_exists( $asset_file ) ) {
-        $assets = require $asset_file;
-        wp_enqueue_script(
-            'mp-ai-sidebar-script',
-            $build_url,
-            $assets['dependencies'],
-            $assets['version'],
-            true
-        );
-
-        wp_enqueue_style(
-            'mp-ai-sidebar-style',
-            MP_AI_PLUGIN_URL . 'build/index.css',
-            array(),
-            $assets['version']
-        );
-
-        wp_localize_script(
-            'mp-ai-sidebar-script',
-            'mpAiSettings',
-            array(
-                'root'  => esc_url_raw( rest_url( 'mp-ai/v1' ) ),
-                'nonce' => wp_create_nonce( 'wp_rest' ),
-                'user_models' => mp_ai_get_available_models(),
-            )
-        );
-    }
 }
 add_action( 'admin_enqueue_scripts', 'mp_ai_plugin_enqueue_editor_assets' );
 
-function mp_ai_get_available_models() {
-    // This could be dynamic, but for now hardcoded based on snippet + OpenAI options
-    return [
-        ['label' => 'Gemini 1.5 Flash', 'value' => 'gemini-1.5-flash'],
-        ['label' => 'Gemini 1.5 Pro', 'value' => 'gemini-1.5-pro'],
-        ['label' => 'GPT-4o', 'value' => 'gpt-4o'],
-        ['label' => 'GPT-4', 'value' => 'gpt-4'],
-        ['label' => 'DALL-E 3 (Image)', 'value' => 'dall-e-3'],
-        ['label' => 'Imagen 3 (Image)', 'value' => 'imagen-3.0-generate-001'],
-    ];
-}
-
 // --- User Profile ---
 function mp_ai_plugin_user_profile_fields( $user ) {
-    $uid = $user->ID;
-    $raw_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
-    $decrypted_key = mp_ai_decrypt_key( $raw_key );
-
-    $raw_search_key = get_user_meta( $uid, 'mp_ai_search_api_key', true );
-    $decrypted_search_key = mp_ai_decrypt_key( $raw_search_key );
-
-    $search_cx = get_user_meta( $uid, 'mp_ai_search_cx', true );
     ?>
-    <h3><?php esc_html_e( 'AI Content Generator Settings (v2.0)', 'mp-ai-content-generator' ); ?></h3>
+    <h3><?php esc_html_e( 'AI Content Generator Settings', 'mp-ai-content-generator' ); ?></h3>
     <table class="form-table">
         <tr>
             <th><label for="mp_ai_user_api_key">AI Model API Key</label></th>
             <td>
-                <input type="password" name="mp_ai_user_api_key" id="mp_ai_user_api_key" value="<?php echo esc_attr( $decrypted_key ); ?>" class="regular-text" />
-                <p class="description">Google Gemini or OpenAI API Key. (Encrypted)</p>
+                <input type="password" name="mp_ai_user_api_key" id="mp_ai_user_api_key" value="<?php echo esc_attr( get_the_author_meta( 'mp_ai_user_api_key', $user->ID ) ); ?>" class="regular-text" />
+                <p class="description">Google Gemini or OpenAI API Key.</p>
             </td>
         </tr>
         <tr>
             <th><label for="mp_ai_search_api_key">Google Search API Key</label></th>
             <td>
-                <input type="password" name="mp_ai_search_api_key" id="mp_ai_search_api_key" value="<?php echo esc_attr( $decrypted_search_key ); ?>" class="regular-text" />
-                <p class="description">Google Custom Search API Key. (Encrypted)</p>
+                <input type="password" name="mp_ai_search_api_key" id="mp_ai_search_api_key" value="<?php echo esc_attr( get_the_author_meta( 'mp_ai_search_api_key', $user->ID ) ); ?>" class="regular-text" />
             </td>
         </tr>
         <tr>
             <th><label for="mp_ai_search_cx">Search Engine ID (CX)</label></th>
             <td>
-                <input type="text" name="mp_ai_search_cx" id="mp_ai_search_cx" value="<?php echo esc_attr( $search_cx ); ?>" class="regular-text" />
+                <input type="text" name="mp_ai_search_cx" id="mp_ai_search_cx" value="<?php echo esc_attr( get_the_author_meta( 'mp_ai_search_cx', $user->ID ) ); ?>" class="regular-text" />
             </td>
         </tr>
     </table>
@@ -187,20 +93,9 @@ add_action( 'edit_user_profile', 'mp_ai_plugin_user_profile_fields' );
 
 function mp_ai_plugin_save_user_profile_fields( $user_id ) {
     if ( ! current_user_can( 'edit_user', $user_id ) ) return false;
-
-    if ( isset( $_POST['mp_ai_user_api_key'] ) ) {
-        $encrypted = mp_ai_encrypt_key( sanitize_text_field( $_POST['mp_ai_user_api_key'] ) );
-        update_user_meta( $user_id, 'mp_ai_user_api_key', $encrypted );
-    }
-
-    if ( isset( $_POST['mp_ai_search_api_key'] ) ) {
-        $encrypted = mp_ai_encrypt_key( sanitize_text_field( $_POST['mp_ai_search_api_key'] ) );
-        update_user_meta( $user_id, 'mp_ai_search_api_key', $encrypted );
-    }
-
-    if ( isset( $_POST['mp_ai_search_cx'] ) ) {
-        // CX is usually not secret, but can encrypt if desired. keeping plain for now based on context.
-        update_user_meta( $user_id, 'mp_ai_search_cx', sanitize_text_field( $_POST['mp_ai_search_cx'] ) );
+    $fields = ['mp_ai_user_api_key', 'mp_ai_search_api_key', 'mp_ai_search_cx'];
+    foreach($fields as $f) {
+        if ( isset( $_POST[$f] ) ) update_user_meta( $user_id, $f, sanitize_text_field( $_POST[$f] ) );
     }
 }
 add_action( 'personal_options_update', 'mp_ai_plugin_save_user_profile_fields' );
@@ -208,7 +103,7 @@ add_action( 'edit_user_profile_update', 'mp_ai_plugin_save_user_profile_fields' 
 
 // --- Meta Box ---
 function mp_ai_plugin_add_meta_box() {
-    add_meta_box( 'mp_ai_content_box', __( 'AI Content Studio (Legacy)', 'mp-ai-content-generator' ), 'mp_ai_plugin_meta_box_callback', array( 'post', 'page' ), 'side', 'default' );
+    add_meta_box( 'mp_ai_content_box', __( 'AI Content Studio', 'mp-ai-content-generator' ), 'mp_ai_plugin_meta_box_callback', array( 'post', 'page' ), 'side', 'default' );
 }
 add_action( 'add_meta_boxes', 'mp_ai_plugin_add_meta_box' );
 
@@ -281,9 +176,7 @@ function mp_ai_plugin_meta_box_callback( $post ) {
 function mp_ai_plugin_list_models_ajax() {
     check_ajax_referer( 'mp_ai_plugin_nonce', 'nonce' );
     $uid = get_current_user_id();
-    $raw_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
-    $api_key = mp_ai_decrypt_key( $raw_key ); // DECRYPTED
-
+    $api_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
     $provider = get_option( 'mp_ai_plugin_ai_model', 'gemini' );
 
     if ( empty( $api_key ) ) wp_send_json_error( 'Missing API Key' );
@@ -336,9 +229,7 @@ function mp_ai_plugin_generate_content_ajax() {
     if ( empty( $prompt ) ) wp_send_json_error( 'Prompt empty.' );
 
     $uid = get_current_user_id();
-    $raw_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
-    $api_key = mp_ai_decrypt_key( $raw_key ); // DECRYPTED
-
+    $api_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
     if ( empty( $api_key ) ) wp_send_json_error( 'Missing AI API Key.' );
 
     $ai_provider = get_option( 'mp_ai_plugin_ai_model', 'gemini' );
@@ -376,9 +267,7 @@ function mp_ai_plugin_generate_content_ajax() {
     
     // Web Search
     if ( $use_web_search ) {
-        $raw_s_key = get_user_meta( $uid, 'mp_ai_search_api_key', true );
-        $s_key = mp_ai_decrypt_key( $raw_s_key ); // DECRYPTED
-
+        $s_key = get_user_meta( $uid, 'mp_ai_search_api_key', true );
         $s_cx = get_user_meta( $uid, 'mp_ai_search_cx', true );
         if ( $s_key && $s_cx ) {
             $search_res = mp_ai_google_search( $prompt, $s_key, $s_cx );
@@ -389,7 +278,7 @@ function mp_ai_plugin_generate_content_ajax() {
     // URL Scraper
     if ( ! empty( $ref_url ) ) {
         $scraped = mp_ai_scrape_url( $ref_url );
-        if ( ! is_wp_error( $scraped ) ) $context .= "\n\n[CONTEXT from $ref_url]:\n" . $scraped['content'];
+        if ( ! is_wp_error( $scraped ) ) $context .= "\n\nhttps://www.merriam-webster.com/dictionary/context:\n" . $scraped['content'];
     }
 
     $cats = get_categories(['hide_empty'=>false]);
@@ -434,227 +323,6 @@ function mp_ai_plugin_generate_content_ajax() {
     }
 }
 add_action( 'wp_ajax_mp_ai_plugin_generate_content', 'mp_ai_plugin_generate_content_ajax' );
-
-// --- REST API & Streaming Endpoint ---
-
-add_action( 'rest_api_init', function () {
-    register_rest_route( 'mp-ai/v1', '/generate-stream', [
-        'methods' => 'POST',
-        'callback' => 'mp_ai_handle_stream',
-        'permission_callback' => function () {
-            return current_user_can( 'edit_posts' );
-        },
-    ]);
-
-    register_rest_route( 'mp-ai/v1', '/generate-image', [
-        'methods' => 'POST',
-        'callback' => 'mp_ai_handle_rest_image',
-        'permission_callback' => function () {
-            return current_user_can( 'edit_posts' );
-        },
-    ]);
-});
-
-// REST Image Generation Handler (Wrapper around existing logic)
-function mp_ai_handle_rest_image( $request ) {
-    $params = $request->get_json_params();
-    $prompt = sanitize_textarea_field( $params['prompt'] ?? '' );
-    $model  = sanitize_text_field( $params['model'] ?? 'dall-e-3' );
-
-    $uid = get_current_user_id();
-    $raw_key = get_user_meta( $uid, 'mp_ai_user_api_key', true );
-    $api_key = mp_ai_decrypt_key( $raw_key );
-
-    if ( empty( $api_key ) ) {
-        return new WP_Error( 'no_key', 'API Key missing', ['status' => 403] );
-    }
-
-    try {
-        $img_data = null;
-        // Determine provider by model name approximation
-        if ( strpos( $model, 'dall-e' ) !== false ) {
-            $img_data = mp_ai_generate_image_openai( $prompt, $api_key, $model );
-        } else {
-            // Assume gemini/imagen
-            $img_data = mp_ai_generate_image_gemini( $prompt, $api_key, $model );
-        }
-
-        $upload_result = mp_ai_upload_base64_image( $img_data['base64'], $img_data['mime'], $prompt );
-        if ( is_wp_error( $upload_result ) ) throw new Exception( $upload_result->get_error_message() );
-
-        return new WP_REST_Response([
-            'type' => 'image',
-            'media_id' => $upload_result['id'],
-            'url' => $upload_result['url'],
-            'alt' => $prompt
-        ], 200);
-
-    } catch ( Exception $e ) {
-        return new WP_Error( 'gen_error', $e->getMessage(), ['status' => 500] );
-    }
-}
-
-function mp_ai_handle_stream( $request ) {
-    $params = $request->get_json_params();
-    $prompt = sanitize_textarea_field( $params['prompt'] ?? '' );
-    $model = sanitize_text_field( $params['model'] ?? 'gemini-1.5-flash' );
-
-    $use_web_search = !empty($params['use_web_search']);
-    $ref_url = esc_url_raw( $params['ref_url'] ?? '' );
-    $image_context_id = intval( $params['context_image_id'] ?? 0 );
-
-    $uid = get_current_user_id();
-    $api_key = mp_ai_decrypt_key( get_user_meta( $uid, 'mp_ai_user_api_key', true ) );
-
-    if ( empty( $api_key ) ) {
-        return new WP_Error( 'no_key', 'API Key missing', ['status' => 403] );
-    }
-
-    // --- Build Context (Copied from AJAX handler) ---
-    $context = "";
-
-    // Web Search
-    if ( $use_web_search ) {
-        $s_key = mp_ai_decrypt_key( get_user_meta( $uid, 'mp_ai_search_api_key', true ) );
-        $s_cx = get_user_meta( $uid, 'mp_ai_search_cx', true );
-        if ( $s_key && $s_cx ) {
-            $search_res = mp_ai_google_search( $prompt, $s_key, $s_cx );
-            if ( ! is_wp_error( $search_res ) ) $context .= "\n\n[WEB SEARCH RESULTS]:\n" . $search_res;
-        }
-    }
-
-    // URL Scraper
-    if ( ! empty( $ref_url ) ) {
-        $scraped = mp_ai_scrape_url( $ref_url );
-        if ( ! is_wp_error( $scraped ) ) $context .= "\n\n[CONTEXT from $ref_url]:\n" . $scraped['content'];
-    }
-
-    $final_prompt = $prompt . $context . "\n\n[INSTRUCTION]: Format response in Markdown.";
-
-    // Image Context
-    $image_base64 = null;
-    $image_mime = null;
-    if ( $image_context_id > 0 ) {
-        $img_info = mp_ai_get_image_base64( $image_context_id );
-        if ( ! is_wp_error( $img_info ) ) {
-            $image_base64 = $img_info['base64'];
-            $image_mime = $img_info['mime'];
-        }
-    }
-
-    // --- Start SSE Stream ---
-    header( 'Content-Type: text/event-stream' );
-    header( 'Cache-Control: no-cache' );
-    header( 'Connection: keep-alive' );
-    header( 'X-Accel-Buffering: no' ); // Nginx specific
-
-    // Flush initial headers
-    if ( function_exists( 'apache_setenv' ) ) apache_setenv( 'no-gzip', 1 );
-    @ini_set('zlib.output_compression', 0);
-    @ini_set('implicit_flush', 1);
-    ob_implicit_flush( true );
-    while ( ob_get_level() > 0 ) ob_end_flush();
-
-    // Determine provider based on model name
-    $is_openai = strpos($model, 'gpt') !== false;
-
-    if ( $is_openai ) {
-        $url = "https://api.openai.com/v1/chat/completions";
-
-        $messages = [['role' => 'user', 'content' => $final_prompt]];
-        if ( $image_base64 && $image_mime ) {
-            // OpenAI Image format (using standard chat completions with vision if supported)
-             $messages[0]['content'] = [
-                ['type' => 'text', 'text' => $final_prompt],
-                ['type' => 'image_url', 'image_url' => ['url' => "data:$image_mime;base64,$image_base64"]]
-             ];
-        }
-
-        $body = json_encode([
-            'model' => $model,
-            'messages' => $messages,
-            'stream' => true
-        ]);
-
-        $headers = [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' . $api_key
-        ];
-    } else {
-        // Gemini
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/$model:streamGenerateContent?key=$api_key";
-
-        $parts = [['text' => $final_prompt]];
-        if ( $image_base64 && $image_mime ) {
-            array_unshift($parts, [
-                'inlineData' => [
-                    'mimeType' => $image_mime,
-                    'data'     => $image_base64
-                ]
-            ]);
-        }
-
-        $body = json_encode([
-            'contents' => [['parts' => $parts]]
-        ]);
-
-        $headers = ['Content-Type: application/json'];
-    }
-
-    // We use cURL directly for streaming support
-    $ch = curl_init( $url );
-    curl_setopt( $ch, CURLOPT_POST, true );
-    curl_setopt( $ch, CURLOPT_POSTFIELDS, $body );
-    curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
-    curl_setopt( $ch, CURLOPT_WRITEFUNCTION, function( $curl, $data ) use ($is_openai) {
-        if ( $is_openai ) {
-            // OpenAI Format: data: {"id":..., "choices":[{ "delta": {"content": "..."} }]}
-            // OpenAI sends data prefixed with "data: " and ends with "data: [DONE]"
-
-            // We need to pass through the chunks but normalize the content extraction for the frontend.
-            // Our frontend expects: data: {"text": "chunk"}
-
-            // Note: $data might contain multiple lines or partial lines.
-            // For robustness, we should buffer. But for this simplified impl, we process what we can.
-
-            $lines = explode("\n", $data);
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if (strpos($line, 'data: ') === 0) {
-                    $json_str = substr($line, 6);
-                    if ($json_str === '[DONE]') continue;
-
-                    $json = json_decode($json_str, true);
-                    if (isset($json['choices'][0]['delta']['content'])) {
-                        $chunk = $json['choices'][0]['delta']['content'];
-                        echo "data: " . json_encode(['text' => $chunk]) . "\n\n";
-                        flush();
-                    }
-                }
-            }
-        } else {
-            // Gemini Format
-            $clean_data = trim( $data, "[],\n\r" );
-
-            if ( !empty( $clean_data ) ) {
-                $json = json_decode( $clean_data, true );
-                if ( isset( $json['candidates'][0]['content']['parts'][0]['text'] ) ) {
-                    $text_chunk = $json['candidates'][0]['content']['parts'][0]['text'];
-                    echo "data: " . json_encode(['text' => $text_chunk]) . "\n\n";
-                    flush();
-                }
-            }
-        }
-        return strlen( $data );
-    });
-
-    curl_exec( $ch );
-    curl_close( $ch );
-
-    echo "data: [DONE]\n\n";
-    flush();
-    exit; // Terminate WP execution
-}
 
 // --- HELPER FUNCTIONS ---
 
