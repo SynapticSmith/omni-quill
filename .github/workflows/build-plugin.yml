@@ -2,8 +2,7 @@ name: Build and Zip Plugin
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -12,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
@@ -23,32 +22,41 @@ jobs:
     - name: Install Dependencies
       run: npm ci
 
-    - name: Build React Assets
+    - name: Build Assets
       run: npm run build
 
-    - name: Create Plugin Zip
+    - name: Prepare Plugin Files
       run: |
-        # Create a temporary directory for the zip structure
-        mkdir -p temp-plugin/mp-ai-content-generator
+        # Create the plugin directory structure
+        mkdir -p mp-ai-content-generator
         
-        # Copy relevant files (excluding node_modules, src, etc.)
-        rsync -av --progress ./ temp-plugin/mp-ai-content-generator/ \
-          --exclude '.git' \
-          --exclude '.github' \
-          --exclude 'node_modules' \
-          --exclude 'src' \
-          --exclude '.gitignore' \
-          --exclude 'package.json' \
-          --exclude 'package-lock.json' \
-          --exclude '*.zip'
-          
-        # Zip the directory
-        cd temp-plugin
-        zip -r ../mp-ai-content-generator.zip mp-ai-content-generator
+        # 1. Copy Main Files
+        cp mp-ai-content-generator.php mp-ai-content-generator/
+        cp readme.txt mp-ai-content-generator/ || true
+        cp package.json mp-ai-content-generator/ || true
+        
+        # 2. Copy Existing Directories (Explicitly)
+        # Using -r for recursive copy
+        if [ -d "admin" ]; then cp -r admin mp-ai-content-generator/; fi
+        if [ -d "assets" ]; then cp -r assets mp-ai-content-generator/; fi
+        if [ -d "languages" ]; then cp -r languages mp-ai-content-generator/; fi
+        
+        # 3. Copy the Generated Build Directory (Critical)
+        if [ -d "build" ]; then
+          cp -r build mp-ai-content-generator/
+        else
+          echo "Error: 'build' directory was not created by npm run build."
+          exit 1
+        fi
 
-    - name: Upload Plugin Zip
+    - name: Create Zip
+      run: |
+        zip -r mp-ai-content-generator.zip mp-ai-content-generator
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: mp-ai-content-generator-zip
         path: mp-ai-content-generator.zip
+
 
