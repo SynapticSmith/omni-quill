@@ -1,33 +1,33 @@
 jQuery(document).ready(function($) {
-    var $promptTextarea = $('#mp_ai_prompt');
-    var $refUrlInput = $('#mp_ai_ref_url');
-    var $generateButton = $('#mp_ai_generate_button');
-    var $loadingIndicator = $('#mp_ai_loading_indicator');
-    var $loadingText = $('#mp_ai_loading_text');
-    var $messageArea = $('#mp_ai_message_area');
-    var $modelSelect = $('#mp_ai_model_select');
-    var $refreshBtn = $('#mp_ai_refresh_models');
+    var $promptTextarea = $('#omni_prompt');
+    var $refUrlInput = $('#omni_ref_url');
+    var $generateButton = $('#omni_generate_button');
+    var $loadingIndicator = $('#omni_loading_indicator');
+    var $loadingText = $('#omni_loading_text');
+    var $messageArea = $('#omni_message_area');
+    var $modelSelect = $('#omni_model_select');
+    var $refreshBtn = $('#omni_refresh_models');
     
     // Image Context Elements
-    var $imgContextArea = $('#mp_ai_image_context_area');
-    var $imgContextId = $('#mp_ai_context_image_id');
-    var $imgPreview = $('#mp_ai_context_image_preview');
-    var $selectImgBtn = $('#mp_ai_select_image_btn');
-    var $clearImgBtn = $('#mp_ai_clear_image_btn');
+    var $imgContextArea = $('#omni_image_context_area');
+    var $imgContextId = $('#omni_context_image_id');
+    var $imgPreview = $('#omni_context_image_preview');
+    var $selectImgBtn = $('#omni_select_image_btn');
+    var $clearImgBtn = $('#omni_clear_image_btn');
 
     // Load saved models
-    const savedModels = localStorage.getItem('mp_ai_models_cache');
+    const savedModels = localStorage.getItem('omni_models_cache');
     if(savedModels) populateModelSelect(JSON.parse(savedModels));
     
-    const savedSelection = localStorage.getItem('mp_ai_selected_model');
+    const savedSelection = localStorage.getItem('omni_selected_model');
     if(savedSelection && $modelSelect.find(`option[value="${savedSelection}"]`).length) $modelSelect.val(savedSelection);
 
-    $modelSelect.on('change', function() { localStorage.setItem('mp_ai_selected_model', $(this).val()); });
+    $modelSelect.on('change', function() { localStorage.setItem('omni_selected_model', $(this).val()); });
 
     // Tool Toggles
-    $('.mp-tool-btn').on('click', function() {
+    $('.omni-tool-btn').on('click', function() {
         if($(this).find('input[type="radio"]').length > 0) {
-            $('.mp-tool-btn').removeClass('active');
+            $('.omni-tool-btn').removeClass('active');
             $(this).addClass('active');
             
             // Toggle Image Context visibility (Hide if generating image)
@@ -41,7 +41,7 @@ jQuery(document).ready(function($) {
     });
     
     // Trigger initial visibility check
-    $('input[name="mp_tool_mode"]:checked').closest('.mp-tool-btn').click();
+    $('input[name="omni_tool_mode"]:checked').closest('.omni-tool-btn').click();
 
     // --- WP MEDIA UPLOADER ---
     var file_frame;
@@ -80,12 +80,12 @@ jQuery(document).ready(function($) {
         $(this).prop('disabled', true);
 
         $.ajax({
-            url: mpAiPluginData.ajax_url,
+            url: omniData.ajax_url,
             type: 'POST',
-            data: { action: 'mp_ai_list_models', nonce: mpAiPluginData.nonce },
+            data: { action: 'omni_list_models', nonce: omniData.nonce },
             success: function(response) {
                 if(response.success) {
-                    localStorage.setItem('mp_ai_models_cache', JSON.stringify(response.data));
+                    localStorage.setItem('omni_models_cache', JSON.stringify(response.data));
                     populateModelSelect(response.data);
                     showMessage('Models synced successfully!', 'success');
                 } else {
@@ -107,7 +107,7 @@ jQuery(document).ready(function($) {
             else textGroup.append(option);
         });
         $modelSelect.append(textGroup).append(imageGroup);
-        const saved = localStorage.getItem('mp_ai_selected_model');
+        const saved = localStorage.getItem('omni_selected_model');
         if(saved) $modelSelect.val(saved);
     }
 
@@ -146,8 +146,8 @@ jQuery(document).ready(function($) {
         clearMessage();
         var prompt = $promptTextarea.val().trim();
         var refUrl = $refUrlInput.val().trim();
-        var toolMode = $('input[name="mp_tool_mode"]:checked').val();
-        var useWebSearch = $('#mp_tool_web').is(':checked');
+        var toolMode = $('input[name="omni_tool_mode"]:checked').val();
+        var useWebSearch = $('#omni_tool_web').is(':checked');
         var selectedModel = $modelSelect.val();
         var contextImgId = $imgContextId.val();
 
@@ -163,17 +163,17 @@ jQuery(document).ready(function($) {
         $loadingText.text(status);
 
         $.ajax({
-            url: mpAiPluginData.ajax_url,
+            url: omniData.ajax_url,
             type: 'POST',
             data: {
-                action: 'mp_ai_plugin_generate_content',
+                action: 'omni_plugin_generate_content',
                 prompt: prompt,
                 ref_url: refUrl,
                 tool_mode: toolMode,
                 use_web_search: useWebSearch,
                 model: selectedModel,
                 context_image_id: contextImgId,
-                nonce: mpAiPluginData.nonce
+                nonce: omniData.nonce
             },
             success: function(response) {
                 if (response.success) {
