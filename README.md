@@ -10,14 +10,29 @@ MP AI Content Generator is a high-performance WordPress plugin that integrates m
 
 Unlike standard wrappers, this plugin features **multimodal context awareness** (analyzing images from your library), **real-time web search augmentation**, and **native Gutenberg block generation**.
 
-Part 1: Full Code Inspection
+---
+
+## 🚀 Key Features
+
+* **Multimodal AI Support:** Send both text prompts and images to models like Gemini 1.5 Flash or GPT-4o for analysis and captioning.
+* **Native Block Generation:** Automatically converts AI responses into native WordPress blocks (Headings, Paragraphs, Lists, Code, Images).
+* **Dynamic Model Syncing:** Fetches the latest available models directly from the API, ensuring you always have access to the newest versions.
+* **Web Search Augmentation:** Enhances AI accuracy by injecting real-time Google Search results into the prompt context.
+* **Context Scraping:** Scrapes content from external URLs to use as reference material for content generation.
+* **Image Generation:** Generates images (DALL-E 3 or Imagen) and automatically uploads them to the WordPress Media Library.
+
+---
+
+## Part 1: Full Code Inspection
+
 This inspection maps the architecture, logic flow, and specific functionalities of the MP AI Content Generator plugin.
-1. File Structure & Organization
+### 1. File Structure & Organization
 The plugin follows a standard WordPress plugin structure:
  * Root: Contains the main plugin file (mp-ai-content-generator.php) which handles initialization, backend logic, and API integrations.
  * Admin: Contains settings-page.php for global configuration.
  * Assets: Separates concerns into css/editor-styles.css (UI styling) and js/editor-integration.js (frontend logic and Block Editor integration).
-2. Core Backend Logic (mp-ai-content-generator.php)
+ * 
+### 2. Core Backend Logic (mp-ai-content-generator.php)
 This file is the engine of the plugin.
  * Initialization:
    * Defines constants for directory paths and URLs.
@@ -38,11 +53,13 @@ This file is the engine of the plugin.
        * Scraping: Fetches a reference URL, strips scripts/styles, and appends content.
        * Vision (Multimodal): If an image is selected in the UI, it fetches the base64 data and mime type to send to the model (Gemini or GPT-4o).
        * System Instructions: Varies instructions based on whether the user wants "Code" (developer persona) or "Standard Text" (Markdown formatting).
-3. Admin & Settings (admin/settings-page.php)
+### 3. Admin & Settings (admin/settings-page.php)
+
  * Global Provider Selection: Allows an administrator to set the default AI Provider (Gemini or OpenAI).
  * Model Override: Provides a field to manually override the model ID string.
  * Menu Registration: Adds a top-level menu item "AI Content Gen".
-4. Frontend Logic (assets/js/editor-integration.js)
+### 4. Frontend Logic (assets/js/editor-integration.js)
+
  * State Management: Uses localStorage to cache the list of available models and the user's last selected model to reduce API calls.
  * Media Integration: Uses wp.media frames to allow users to select an image from the library to use as context for the AI (e.g., "Describe this image").
  * Block Editor (Gutenberg) Integration:
@@ -51,37 +68,16 @@ This file is the engine of the plugin.
      * core/image for generated images.
      * core/code for code snippets.
      * core/heading, core/list, and core/paragraph for standard text.
+
+
+---
+
 Part 2: Technical README Documentation
-
-
----
-
-## 🚀 Key Features
-
-* **Multimodal AI Support:** Send both text prompts and images to models like Gemini 1.5 Flash or GPT-4o for analysis and captioning.
-* **Native Block Generation:** Automatically converts AI responses into native WordPress blocks (Headings, Paragraphs, Lists, Code, Images).
-* **Dynamic Model Syncing:** Fetches the latest available models directly from the API, ensuring you always have access to the newest versions.
-* **Web Search Augmentation:** Enhances AI accuracy by injecting real-time Google Search results into the prompt context.
-* **Context Scraping:** Scrapes content from external URLs to use as reference material for content generation.
-* **Image Generation:** Generates images (DALL-E 3 or Imagen) and automatically uploads them to the WordPress Media Library.
-
----
 
 ## 🛠 Technical Architecture
 
-### Directory Structure
 
-synapticsmith-wp-multimodal-ai-studio/
-├── mp-ai-content-generator.php       # Core plugin logic & API handlers
-├── admin/
-│   └── settings-page.php             # Global settings (Provider selection)
-└── assets/
-    ├── css/
-    │   └── editor-styles.css         # Editor UI styling
-    └── js/
-        └── editor-integration.js     # Block Editor integration & State
-
-Data Flow
+### Data Flow
  * User Input: The user interacts with the "AI Content Studio" meta box in the editor.
  * Context Assembly (JS): The JS collects the prompt, tool mode (Text/Image/Code), and optional context (reference URL or Image ID).
  * AJAX Request: Data is sent to wp_ajax_mp_ai_plugin_generate_content.
@@ -90,7 +86,7 @@ Data Flow
    * Augmentation: Fetches external data (Google Search/URL Scrape) if requested.
    * API Dispatch: Calls mp_ai_call_gemini_text or mp_ai_call_openai_text.
  * Block Construction (JS): The raw Markdown response is parsed client-side and converted into wp.blocks.createBlock commands.
-⚙️ Configuration & Setup
+### ⚙️ Configuration & Setup
 1. Global Settings
 Navigate to Settings > AI Content Gen.
  * AI Provider: Select between Google Gemini (default) or OpenAI.
@@ -101,7 +97,7 @@ Navigate to Users > Profile and scroll to "AI Content Generator Settings".
  * AI Model API Key: Enter your Google Gemini API Key or OpenAI Secret Key.
  * Google Search API Key: (Optional) Key for Custom Search JSON API.
  * Search Engine ID (CX): (Optional) Your Google Custom Search Engine ID.
-🔌 API Integration Details
+### 🔌 API Integration Details
 Google Gemini Integration
  * Text/Multimodal: Uses the v1beta/models/{model}:generateContent endpoint.
    * Supports inlineData for base64 image transmission.
@@ -113,25 +109,26 @@ OpenAI Integration
 Web & Scraper
  * Search: Google Custom Search JSON API (googleapis.com/customsearch/v1).
  * Scraper: Uses DOMDocument to load HTML from a URL, stripping <script> and <style> tags to extract clean text context.
-💻 Frontend & Block Logic
+### 💻 Frontend & Block Logic
 The editor-integration.js file handles the bridge between the raw AI text and WordPress Blocks.
 Markdown to Blocks
 The system uses a custom parser convertMarkdownToHtml to segment the AI response:
- * ## H2 → core/heading (Level 2)
- * ### H3 → core/heading (Level 3)
+ *  H2 → core/heading (Level 2)
+ *  H3 → core/heading (Level 3)
  * - List items → core/list
  * Standard text → core/paragraph
-Image Context
+   
+**Image Context**
 When a user selects an image for analysis:
  * The Media Library frame opens via wp.media.
  * The Attachment ID is stored in #mp_ai_context_image_id.
  * On generation, the PHP backend retrieves the file path via get_attached_file, converts it to Base64, and sends it to the vision-capable model.
-🛡 Security
+### 🛡 Security
  * Nonce Verification: All AJAX requests are protected with check_ajax_referer('mp_ai_plugin_nonce').
  * Capability Checks: Restricted to users with edit_posts capability.
  * Input Sanitization: Uses sanitize_textarea_field, sanitize_text_field, and esc_url_raw on all incoming POST data [cite: 45-47].
- * [cite_start]Output Escaping: Attributes are escaped using esc_attr and URLs with esc_url.
-🐛 Troubleshooting
+ * Output Escaping: Attributes are escaped using esc_attr and URLs with esc_url.
+### 🐛 Troubleshooting
 | Issue | Possible Cause | Solution |
 |---|---|---|
 | "Missing API Key" | User Profile field is empty. | Go to Users > Profile and add your API key. |
