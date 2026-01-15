@@ -1,3 +1,14 @@
+# MP AI Content Generator (Multimodal AI Studio)
+
+**Version:** 1.0.1.1  
+**Requires PHP:** 7.4+  
+**Requires WP:** 5.8+  
+
+## 📖 Overview
+
+MP AI Content Generator is a high-performance WordPress plugin that integrates multimodal AI capabilities directly into the WordPress Block Editor (Gutenberg). It allows creators to generate text, code, and images using **Google Gemini** or **OpenAI** models. 
+
+Unlike standard wrappers, this plugin features **multimodal context awareness** (analyzing images from your library), **real-time web search augmentation**, and **native Gutenberg block generation**.
 
 Part 1: Full Code Inspection
 This inspection maps the architecture, logic flow, and specific functionalities of the MP AI Content Generator plugin.
@@ -41,28 +52,18 @@ This file is the engine of the plugin.
      * core/code for code snippets.
      * core/heading, core/list, and core/paragraph for standard text.
 Part 2: Technical README Documentation
-# MP AI Content Generator (Multimodal AI Studio)
 
-**Version:** 1.0.1.1  
-**Requires PHP:** 7.4+  
-**Requires WP:** 5.8+  
-
-## 📖 Overview
-
-MP AI Content Generator is a high-performance WordPress plugin that integrates multimodal AI capabilities directly into the WordPress Block Editor (Gutenberg). It allows creators to generate text, code, and images using **Google Gemini** or **OpenAI** models. 
-
-Unlike standard wrappers, this plugin features **multimodal context awareness** (analyzing images from your library), **real-time web search augmentation**, and **native Gutenberg block generation**.
 
 ---
 
 ## 🚀 Key Features
 
-* **[span_30](start_span)[span_31](start_span)Multimodal AI Support:** Send both text prompts and images to models like Gemini 1.5 Flash or GPT-4o for analysis and captioning[span_30](end_span)[span_31](end_span).
-* **[span_32](start_span)Native Block Generation:** Automatically converts AI responses into native WordPress blocks (Headings, Paragraphs, Lists, Code, Images)[span_32](end_span).
-* **[span_33](start_span)Dynamic Model Syncing:** Fetches the latest available models directly from the API, ensuring you always have access to the newest versions[span_33](end_span).
-* **[span_34](start_span)Web Search Augmentation:** Enhances AI accuracy by injecting real-time Google Search results into the prompt context[span_34](end_span).
-* **[span_35](start_span)Context Scraping:** Scrapes content from external URLs to use as reference material for content generation[span_35](end_span).
-* **[span_36](start_span)Image Generation:** Generates images (DALL-E 3 or Imagen) and automatically uploads them to the WordPress Media Library[span_36](end_span).
+* **Multimodal AI Support:** Send both text prompts and images to models like Gemini 1.5 Flash or GPT-4o for analysis and captioning.
+* **Native Block Generation:** Automatically converts AI responses into native WordPress blocks (Headings, Paragraphs, Lists, Code, Images).
+* **Dynamic Model Syncing:** Fetches the latest available models directly from the API, ensuring you always have access to the newest versions.
+* **Web Search Augmentation:** Enhances AI accuracy by injecting real-time Google Search results into the prompt context.
+* **Context Scraping:** Scrapes content from external URLs to use as reference material for content generation.
+* **Image Generation:** Generates images (DALL-E 3 or Imagen) and automatically uploads them to the WordPress Media Library.
 
 ---
 
