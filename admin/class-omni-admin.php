@@ -9,15 +9,18 @@ class OmniQuill_Admin {
     public function __construct() {
         add_action( 'admin_init', array( $this, 'settings_init' ) );
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
         add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
         add_action( 'show_user_profile', array( $this, 'user_profile_fields' ) );
         add_action( 'edit_user_profile', array( $this, 'user_profile_fields' ) );
         add_action( 'personal_options_update', array( $this, 'save_user_profile' ) );
         add_action( 'edit_user_profile_update', array( $this, 'save_user_profile' ) );
+        add_action( 'comment_form_logged_in_after', array( $this, 'inject_omni_studio_to_comments' ) );
+        add_action( 'comment_form_after_fields', array( $this, 'inject_omni_studio_to_comments' ) );
     }
 
-    public function enqueue_assets( $hook ) {
+    public function enqueue_admin_assets( $hook ) {
         if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) return;
 
         wp_enqueue_media();
@@ -33,6 +36,88 @@ class OmniQuill_Admin {
             'nonce'    => wp_create_nonce( 'omni_plugin_nonce' )
         ]);
         wp_enqueue_style( 'omni-writer-style', OMNI_PLUGIN_URL . 'assets/css/omni-styles.css', [], OMNI_VERSION );
+    }
+
+    public function enqueue_frontend_assets() {
+        if ( is_singular() && comments_open() && current_user_can( 'edit_posts' ) ) {
+            // Ensure Dashicons are loaded on frontend
+            wp_enqueue_style( 'dashicons' );
+
+            wp_enqueue_script(
+                'omni-comment-assistant',
+                OMNI_PLUGIN_URL . 'assets/js/omni-comment-assistant.js',
+                array( 'jquery' ),
+                OMNI_VERSION,
+                true
+            );
+            wp_localize_script( 'omni-comment-assistant', 'omniData', [
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'omni_plugin_nonce' )
+            ]);
+            wp_enqueue_style( 'omni-writer-style', OMNI_PLUGIN_URL . 'assets/css/omni-styles.css', [], OMNI_VERSION );
+        }
+    }
+
+    public function inject_omni_studio_to_comments() {
+        if ( ! current_user_can( 'edit_posts' ) ) return;
+
+        $uid = get_current_user_id();
+        $has_key = ! empty( get_user_meta( $uid, 'omni_user_api_key', true ) );
+        $has_search = ! empty( get_user_meta( $uid, 'omni_search_api_key', true ) );
+        ?>
+        <div class="omni-comment-assistant-wrapper">
+            <button type="button" id="omni_comment_toggle" class="button">
+                <span class="dashicons dashicons-superhero"></span> OmniQuill Assistant
+            </button>
+
+            <div id="omni_comment_studio" style="display:none; margin-top: 10px; border: 1px solid #ddd; padding: 15px; background: #fff; border-radius: 4px;">
+                <div class="omni-controls">
+                    <?php if ( ! $has_key ) : ?>
+                        <div class="omni-alert"><strong>Setup:</strong> Please add your API Key in your <a href="<?php echo esc_url( get_edit_profile_url( $uid ) . '#omni_user_api_key' ); ?>" target="_blank">User Profile</a> to use the assistant.</div>
+                    <?php endif; ?>
+
+                    <div class="omni-row" style="margin-bottom:10px; display:flex; gap:5px; align-items:center;">
+                        <select id="omni_comment_model_select" style="flex-grow:1; max-width:85%; font-size:12px;" <?php disabled( !$has_key ); ?>>
+                            <optgroup label="Defaults">
+                                <option value="gemini-1.5-flash" selected>Gemini 1.5 Flash</option>
+                            </optgroup>
+                        </select>
+                        <button type="button" id="omni_comment_refresh_models" class="button" title="Sync Models" <?php disabled( !$has_key ); ?>>
+                            <span class="dashicons dashicons-update"></span>
+                        </button>
+                    </div>
+
+                    <div class="omni-toolbar">
+                        <label title="Web Search" class="omni-tool-btn <?php echo $has_search ? '' : 'disabled'; ?>">
+                            <input type="checkbox" id="omni_comment_tool_web" <?php disabled(!$has_search); ?>>
+                            <span class="dashicons dashicons-search"></span> Web Search
+                        </label>
+                        <label title="Code Mode" class="omni-tool-btn">
+                            <input type="radio" name="omni_comment_tool_mode" value="code">
+                            <span class="dashicons dashicons-editor-code"></span> Code
+                        </label>
+                        <label title="Standard Text" class="omni-tool-btn active">
+                            <input type="radio" name="omni_comment_tool_mode" value="text" checked>
+                            <span class="dashicons dashicons-text"></span> Text
+                        </label>
+                    </div>
+
+                    <textarea id="omni_comment_prompt" rows="3" placeholder="<?php esc_attr_e('Ask OmniQuill...', 'omni-quill'); ?>" <?php disabled( !$has_key ); ?> style="width:100%; margin-bottom:10px;"></textarea>
+
+                    <button type="button" id="omni_comment_generate_btn" class="button button-primary" <?php disabled( !$has_key ); ?> style="width:100%;">Generate Response</button>
+
+                    <div id="omni_comment_loading" style="display:none; margin-top:10px; text-align:center;">
+                        <span class="spinner is-active" style="float:none;"></span> Thinking...
+                    </div>
+
+                    <div id="omni_recent_responses_wrapper" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px; display:none;">
+                        <strong>Recent Responses</strong>
+                        <ul id="omni_recent_responses_list" style="margin:5px 0 0 20px; font-size:12px; list-style: disc;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     public function settings_init() {
